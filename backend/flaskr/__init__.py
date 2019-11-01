@@ -5,9 +5,11 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import random
 
-from models import setup_db, Question, Category
+from models import setup_db
 
-QUESTIONS_PER_PAGE = 10
+
+api_url_prefix = '/api/v1'
+# load environment variables
 load_dotenv()
 
 def create_app(test_config=None):
@@ -15,9 +17,12 @@ def create_app(test_config=None):
   app = Flask(__name__)
   setup_db(app)
   
-  @app.route('/')
-  def home():
-      return 'Hello World'
+  # register blue prints
+  from flaskr.questions.views import question
+
+
+  app.register_blueprint(question, url_prefix=api_url_prefix)
+
   
   '''
   @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs

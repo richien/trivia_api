@@ -3,7 +3,7 @@ from sqlalchemy import Column, String, Integer, create_engine
 from flask_sqlalchemy import SQLAlchemy
 import json
 
-database_name = "trivia"
+database_name = os.getenv('DATABASE_NAME')
 database_user = os.getenv('DATABASE_USER')
 database_password = os.getenv('DATABASE_PASSWORD')
 database_path = "postgres://{}:{}@{}/{}".format(database_user, database_password, 'localhost:5432', database_name)
