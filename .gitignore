@@ -1,3 +1,7 @@
 Pipfile
 .env
 .vscode
+node_modules
+Pipfile.lock
+__pycache__
+

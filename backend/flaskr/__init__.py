@@ -5,7 +5,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import random
 
-from models import setup_db
+from flaskr.models import setup_db
 
 
 api_url_prefix = '/api/v1'
@@ -17,20 +17,39 @@ def create_app(test_config=None):
   app = Flask(__name__)
   setup_db(app)
   
-  # register blue prints
+  # register blue prints for routes
   from flaskr.questions.views import question
 
 
   app.register_blueprint(question, url_prefix=api_url_prefix)
 
-  
-  '''
-  @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
-  '''
+  # set up CORS
+  CORS(app, resource={r'/api/*': {'origins': '*'}})
 
-  '''
-  @TODO: Use the after_request decorator to set Access-Control-Allow
-  '''
+  @app.after_request
+  def after_request(response):
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+        return response
+    
+  # add errorhandlers
+
+  @app.errorhandler(404)
+  def resource_not_found(error):
+      return jsonify({
+          'success': False,
+          'error': 404,
+          'message': 'resource not found'
+      })
+
+  @app.errorhandler(405)
+  def method_not_allowed(error):
+      return jsonify({
+          'success': False,
+          'error': 405,
+          'message': 'method not allowed'
+      })
+
 
   '''
   @TODO: 
@@ -40,11 +59,7 @@ def create_app(test_config=None):
 
 
   '''
-  @TODO: 
-  Create an endpoint to handle GET requests for questions, 
-  including pagination (every 10 questions). 
-  This endpoint should return a list of questions, 
-  number of total questions, current category, categories. 
+  
 
   TEST: At this point, when you start the application
   you should see questions and categories generated,

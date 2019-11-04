@@ -5,6 +5,9 @@ import Question from './Question';
 import Search from './Search';
 import $ from 'jquery';
 
+
+const  BASE_API_URL = 'http://localhost:5000/api/v1'
+
 class QuestionView extends Component {
   constructor(){
     super();
@@ -23,11 +26,20 @@ class QuestionView extends Component {
 
   getQuestions = () => {
     $.ajax({
-      url: `/questions?page=${this.state.page}`, //TODO: update request URL
+      url: `${BASE_API_URL}/questions?page=${this.state.page}`, //TODO: update request URL
       type: "GET",
       success: (result) => {
+        // set the category type for each question
+        const questions = result.questions.map(question => {
+          result.categories.forEach(category => {
+            if(category.id === question.category){
+              question.category = category.type;
+            }
+          });
+          return question;
+        });
         this.setState({
-          questions: result.questions,
+          questions: questions,
           totalQuestions: result.total_questions,
           categories: result.categories,
           currentCategory: result.current_category })
@@ -127,8 +139,8 @@ class QuestionView extends Component {
           <ul>
             {Object.keys(this.state.categories).map((id, ) => (
               <li key={id} onClick={() => {this.getByCategory(id)}}>
-                {this.state.categories[id]}
-                <img className="category" src={`${this.state.categories[id]}.svg`}/>
+                {this.state.categories[id].id}
+                <img className="category" src={`${this.state.categories[id].type.toLowerCase()}.svg`}/>
               </li>
             ))}
           </ul>
@@ -141,7 +153,7 @@ class QuestionView extends Component {
               key={q.id}
               question={q.question}
               answer={q.answer}
-              category={this.state.categories[q.category]} 
+              category={q.category.toLowerCase()} 
               difficulty={q.difficulty}
               questionAction={this.questionAction(q.id)}
             />
