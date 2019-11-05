@@ -17,7 +17,11 @@ class TriviaTestCase(unittest.TestCase):
         self.database_name = os.getenv('TEST_DATABASE_NAME')
         self.database_user = os.getenv('DATABASE_USER')
         self.database_password = os.getenv('DATABASE_PASSWORD')
-        self.database_path = "postgres://{}:{}@{}/{}".format(self.database_user, self.database_password, 'localhost:5432', self.database_name)
+        self.database_path = "postgres://{}:{}@{}/{}".format(
+            self.database_user,
+            self.database_password,
+            'localhost:5432',
+            self.database_name)
         setup_db(self.app, self.database_path)
 
         # binds the app to the current context
@@ -36,18 +40,15 @@ class TriviaTestCase(unittest.TestCase):
             self.db.session.add(self.category)
             self.db.session.add(self.question)
             self.db.session.commit()
-    
+
     def tearDown(self):
         """Executed after reach test"""
         with self.app.app_context():
-            self.db.session.delete(self.question);
-            self.db.session.delete(self.category);
+            self.db.session.delete(self.question)
+            self.db.session.delete(self.category)
             self.db.session.commit()
+            self.db.session.close()
 
-    """
-    TODO
-    Write at least one test for each test for successful operation and for expected errors.
-    """
     def test_get_questions_with_successfull_response(self):
         response = self.client().get('/api/v1/questions?page=1')
         data = json.loads(response.data)
@@ -58,10 +59,11 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['total_questions'], 1)
         self.assertEqual(len(data['categories']), 1)
         self.assertIsNone(data['current_category'])
-    
+
     def test_get_questions_with_unsuccessfull_response(self):
+        # if there are no questions found, return a 404 error response
         with self.app.app_context():
-            self.db.session.delete(self.question);
+            self.db.session.delete(self.question)
             self.db.session.commit()
 
         response = self.client().get('/api/v1/questions?page=1000')
@@ -72,7 +74,28 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['error'], 404)
         self.assertEqual(data['message'], 'resource not found')
 
+    def test_get_categories_with_successfull_response(self):
+        response = self.client().get('/api/v1/categories')
 
+        data = json.loads(response.data)
+
+        self.assertTrue(response.status_code, 200)
+        self.assertTrue(data['success'])
+        self.assertEqual(len(data['categories']), 1)
+
+    def test_get_categories_with_unsuccessfull_response(self):
+        # if there are no categories found, return a 404 error response
+        with self.app.app_context():
+            self.db.session.delete(self.category)
+            self.db.session.commit()
+
+        response = self.client().get('/api/v1/categories')
+        data = json.loads(response.data)
+
+        self.assertTrue(response.status_code, 404)
+        self.assertFalse(data['success'])
+        self.assertEqual(data['error'], 404)
+        self.assertEqual(data['message'], 'resource not found')
 # Make the tests conveniently executable
 if __name__ == "__main__":
     unittest.main()

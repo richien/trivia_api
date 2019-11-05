@@ -26,7 +26,7 @@ class QuestionView extends Component {
 
   getQuestions = () => {
     $.ajax({
-      url: `${BASE_API_URL}/questions?page=${this.state.page}`, //TODO: update request URL
+      url: `${BASE_API_URL}/questions?page=${this.state.page}`,
       type: "GET",
       success: (result) => {
         // set the category type for each question

@@ -51,11 +51,6 @@ def create_app(test_config=None):
       })
 
 
-  '''
-  @TODO: 
-  Create an endpoint to handle GET requests 
-  for all available categories.
-  '''
 
 
   '''

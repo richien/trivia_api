@@ -3,7 +3,8 @@ import $ from 'jquery';
 
 import '../stylesheets/QuizView.css';
 
-const questionsPerPlay = 5; 
+const questionsPerPlay = 5;
+const  BASE_API_URL = 'http://localhost:5000/api/v1'
 
 class QuizView extends Component {
   constructor(props){
@@ -12,7 +13,7 @@ class QuizView extends Component {
         quizCategory: null,
         previousQuestions: [], 
         showAnswer: false,
-        categories: {},
+        categories: [],
         numCorrect: 0,
         currentQuestion: {},
         guess: '',
@@ -22,7 +23,7 @@ class QuizView extends Component {
 
   componentDidMount(){
     $.ajax({
-      url: `/categories`, //TODO: update request URL
+      url: `${BASE_API_URL}/categories`,
       type: "GET",
       success: (result) => {
         this.setState({ categories: result.categories })
@@ -111,8 +112,11 @@ class QuizView extends Component {
                       key={id}
                       value={id}
                       className="play-category"
-                      onClick={() => this.selectCategory({type:this.state.categories[id], id})}>
-                      {this.state.categories[id]}
+                      onClick={() => this.selectCategory({
+                        type:this.state.categories[id].type,
+                        id:this.state.categories[id].id})
+                      }>
+                      {this.state.categories[id].type}
                     </div>
                   )
                 })}

@@ -103,3 +103,45 @@ GET /questions
 
 - If there are no questions in the database for the requested page, a `404` error response
   will be returned. Checkout the section on error handling above for the structure of the response.
+
+```
+GET /categories
+```
+- General
+  - Returns a list of category objects and a success value.
+- Request Arguments
+  - No arguments
+- Sample: `curl http://localhost:5000/api/v1/categories`
+
+```                                                                                                                  
+{
+  "categories": [
+    {
+      "id": 1, 
+      "type": "Science"
+    }, 
+    {
+      "id": 2, 
+      "type": "Art"
+    }, 
+    {
+      "id": 3, 
+      "type": "Geography"
+    }, 
+    {
+      "id": 4, 
+      "type": "History"
+    }, 
+    {
+      "id": 5, 
+      "type": "Entertainment"
+    }, 
+    {
+      "id": 6, 
+      "type": "Sports"
+    }
+  ], 
+  "success": true
+}
+```
+- If there are no categories in the database, a `404` error response will be returned. Checkout the section on error handling above for the structure of the response.
