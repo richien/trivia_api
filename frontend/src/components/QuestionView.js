@@ -24,20 +24,25 @@ class QuestionView extends Component {
     this.getQuestions();
   }
 
+  setQuestionCategoryType(result){
+    // set the category type for each question
+    const questions = result.questions.map(question => {
+      result.categories.forEach(category => {
+        if(category.id === question.category){
+          question.category = category.type;
+        }
+      });
+      return question;
+    });
+    return questions
+  }
+
   getQuestions = () => {
     $.ajax({
       url: `${BASE_API_URL}/questions?page=${this.state.page}`,
       type: "GET",
       success: (result) => {
-        // set the category type for each question
-        const questions = result.questions.map(question => {
-          result.categories.forEach(category => {
-            if(category.id === question.category){
-              question.category = category.type;
-            }
-          });
-          return question;
-        });
+        const questions = this.setQuestionCategoryType(result);
         this.setState({
           questions: questions,
           totalQuestions: result.total_questions,
@@ -72,11 +77,19 @@ class QuestionView extends Component {
 
   getByCategory= (id) => {
     $.ajax({
-      url: `/categories/${id}/questions`, //TODO: update request URL
+      url: `${BASE_API_URL}/categories/${id}/questions?page=${this.state.page}`,
       type: "GET",
       success: (result) => {
+        if(result.error === 404){
+          alert('There are no questions in this category');
+          return;
+        }
+        const questions = result.questions.map(question => {
+          question.category = result.current_category.type;
+          return question;
+        });
         this.setState({
-          questions: result.questions,
+          questions: questions,
           totalQuestions: result.total_questions,
           currentCategory: result.current_category })
         return;
@@ -138,7 +151,7 @@ class QuestionView extends Component {
           <h2 onClick={() => {this.getQuestions()}}>Categories</h2>
           <ul>
             {Object.keys(this.state.categories).map((id, ) => (
-              <li key={id} onClick={() => {this.getByCategory(id)}}>
+              <li key={id} onClick={() => {this.getByCategory(this.state.categories[id].id)}}>
                 {this.state.categories[id].id}
                 <img className="category" src={`${this.state.categories[id].type.toLowerCase()}.svg`}/>
               </li>

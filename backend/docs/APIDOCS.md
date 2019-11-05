@@ -145,3 +145,48 @@ GET /categories
 }
 ```
 - If there are no categories in the database, a `404` error response will be returned. Checkout the section on error handling above for the structure of the response.
+
+```
+GET /categories/<int:id>/questions
+```
+- General
+  - Returns a list of question objects, a success value, the current category object and the total
+    number of questions for the category with the given **id**
+  - Results are paginated in groups of 10 by default. Include a **page** request argument to choose
+    a page number, starting from 1. If no argument is supplied the default page is page 1.
+    - You can also optionally specify a **limit** request argument to change the number or returned questions
+    in the pagination group.
+
+- Request Arguments: 
+    - `page` integer [optional - defaults to 1]
+    - `limit` integer [optional - defaults to 10]
+
+- Sample: `curl http://localhost:5000/api/v1/categories/1/questions?page=1&limit=2`
+
+```                                                                                                                  
+{
+  "current_category": {
+    "id": 1, 
+    "type": "Science"
+  }, 
+  "questions": [
+    {
+      "answer": "The Liver", 
+      "category": 1, 
+      "difficulty": 4, 
+      "id": 20, 
+      "question": "What is the heaviest organ in the human body?"
+    }, 
+    {
+      "answer": "Alexander Fleming", 
+      "category": 1, 
+      "difficulty": 3, 
+      "id": 21, 
+      "question": "Who discovered penicillin?"
+    }
+  ], 
+  "success": true, 
+  "total_questions": 3
+}
+```
+- If there are no categories in the database with the supplied ID, a `404` error response will be returned. Checkout the section on error handling above for the structure of the response.
