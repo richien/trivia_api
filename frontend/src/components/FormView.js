@@ -3,6 +3,8 @@ import $ from 'jquery';
 
 import '../stylesheets/FormView.css';
 
+const  BASE_API_URL = 'http://localhost:5000/api/v1'
+
 class FormView extends Component {
   constructor(props){
     super();
@@ -17,7 +19,7 @@ class FormView extends Component {
 
   componentDidMount(){
     $.ajax({
-      url: `/categories`, //TODO: update request URL
+      url: `${BASE_API_URL}/categories`,
       type: "GET",
       success: (result) => {
         this.setState({ categories: result.categories })
@@ -34,7 +36,7 @@ class FormView extends Component {
   submitQuestion = (event) => {
     event.preventDefault();
     $.ajax({
-      url: '/questions', //TODO: update request URL
+      url: `${BASE_API_URL}/questions`,
       type: "POST",
       dataType: 'json',
       contentType: 'application/json',
@@ -45,7 +47,7 @@ class FormView extends Component {
         category: this.state.category
       }),
       xhrFields: {
-        withCredentials: true
+        withCredentials: false
       },
       crossDomain: true,
       success: (result) => {
@@ -91,7 +93,7 @@ class FormView extends Component {
             <select name="category" onChange={this.handleChange}>
               {Object.keys(this.state.categories).map(id => {
                   return (
-                    <option key={id} value={id}>{this.state.categories[id]}</option>
+                    <option key={id} value={this.state.categories[id].id}>{this.state.categories[id].type}</option>
                   )
                 })}
             </select>

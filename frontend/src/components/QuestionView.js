@@ -10,6 +10,7 @@ const  BASE_API_URL = 'http://localhost:5000/api/v1'
 
 class QuestionView extends Component {
   constructor(){
+    
     super();
     this.state = {
       questions: [],
@@ -17,6 +18,10 @@ class QuestionView extends Component {
       totalQuestions: 0,
       categories: {},
       currentCategory: null,
+      // these flags check whether a page number needs
+      // reseting to `1` when switching from question to category view
+      resetPage: true, 
+      resetPageCount: 0
     }
   }
 
@@ -44,6 +49,8 @@ class QuestionView extends Component {
       success: (result) => {
         const questions = this.setQuestionCategoryType(result);
         this.setState({
+          resetPage: true,
+          resetPageCount: 0,
           questions: questions,
           totalQuestions: result.total_questions,
           categories: result.categories,
@@ -57,8 +64,18 @@ class QuestionView extends Component {
     })
   }
 
-  selectPage(num) {
+  selectPageForQuestions(num) {
     this.setState({page: num}, () => this.getQuestions());
+  }
+  
+  selectPageForCategory(num) {
+    let pageNumber = num;
+    if(this.state.resetPage){
+      pageNumber = 1
+      this.setState({resetPageCount: 1, resetPage: false});
+    }
+    const id = this.state.currentCategory.id;
+    this.setState({page: pageNumber}, () => this.getByCategory(id));
   }
 
   createPagination(){
@@ -69,15 +86,35 @@ class QuestionView extends Component {
         <span
           key={i}
           className={`page-num ${i === this.state.page ? 'active' : ''}`}
-          onClick={() => {this.selectPage(i)}}>{i}
+          onClick={() => {
+            this.state.currentCategory 
+            ? this.selectPageForCategory(i)
+            : this.selectPageForQuestions(i)}}>{i}
         </span>)
     }
     return pageNumbers;
   }
 
+  isNewCategory(id){
+      if(this.state.currentCategory && id !== this.state.currentCategory.id){
+        return true;
+      }
+  }
+
   getByCategory= (id) => {
+    let pageNumber = 1;
+    if(this.state.resetPageCount > 0){
+      pageNumber = this.state.page;
+    }
+    if(this.isNewCategory(id)){
+      pageNumber = 1;
+      this.setState({resetPageCount: 0});
+    }
+    else{
+      this.setState({resetPageCount: 1});
+    }
     $.ajax({
-      url: `${BASE_API_URL}/categories/${id}/questions?page=${this.state.page}`,
+      url: `${BASE_API_URL}/categories/${id}/questions?page=${pageNumber}`,
       type: "GET",
       success: (result) => {
         if(result.error === 404){

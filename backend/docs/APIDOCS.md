@@ -100,9 +100,46 @@ GET /questions
   "total_questions": 19
 }
 ```
-
+- Response Codes
+  - success: 200
+  - error: 404
 - If there are no questions in the database for the requested page, a `404` error response
   will be returned. Checkout the section on error handling above for the structure of the response.
+
+```
+POST /questions
+```
+- General
+     - 
+
+- Request Arguments: 
+    - None
+- Request Body:
+  ```
+    {
+        'question': 'Which is the longest river in Africa?',
+        'answer': 'River Nile',
+        'difficulty': 2,
+        'category': 3
+    }
+  ```
+
+- Sample: `curl -X POST http://localhost:5000/api/v1/questions -d' {"question": "Which is the longest river in Africa?", "answer": "River Nile", "category": 3, "difficulty": 2}' -H "Content-Type: application/json"`
+```
+{
+  "data": {
+    "answer": "River Nile", 
+    "category": 3, 
+    "difficulty": 2, 
+    "id": 25, 
+    "question": "Which is the longest river in Africa?"
+  }, 
+  "success": true
+}
+```
+- Response Codes
+  - success: 201
+  - error: 400 
 
 ```
 GET /categories
@@ -144,6 +181,9 @@ GET /categories
   "success": true
 }
 ```
+- Response Codes
+  - success: 200
+  - error: 404
 - If there are no categories in the database, a `404` error response will be returned. Checkout the section on error handling above for the structure of the response.
 
 ```
@@ -189,4 +229,7 @@ GET /categories/<int:id>/questions
   "total_questions": 3
 }
 ```
+- Response Codes
+  - success: 200
+  - error: 404
 - If there are no categories in the database with the supplied ID, a `404` error response will be returned. Checkout the section on error handling above for the structure of the response.

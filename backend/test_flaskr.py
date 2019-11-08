@@ -44,9 +44,11 @@ class TriviaTestCase(unittest.TestCase):
 
     def tearDown(self):
         """Executed after reach test"""
+        # delete all questions and categories in the test database
+        # and close the session
         with self.app.app_context():
-            self.db.session.delete(self.question)
-            self.db.session.delete(self.category)
+            self.db.session.query(Question).delete()
+            self.db.session.query(Category).delete()
             self.db.session.commit()
             self.db.session.close()
 
@@ -123,6 +125,46 @@ class TriviaTestCase(unittest.TestCase):
         self.assertFalse(data['success'])
         self.assertEqual(data['error'], 404)
         self.assertEqual(data['message'], 'resource not found')
+
+    def test_add_question_with_success_response(self):
+        response = self.client().post(
+            '/api/v1/questions',
+            content_type='application/json',
+            data=json.dumps({
+                'question': 'What is the longest river in Asia?',
+                'answer': 'Yangtze River',
+                'difficulty': 1,
+                'category': 1
+            })
+        )
+
+        data = json.loads(response.data)
+
+        self.assertTrue(response.status_code, 201)
+        self.assertTrue(data['success'])
+        self.assertEqual(
+            data['data']['question'],
+            'What is the longest river in Asia?')
+    
+    def test_add_question_with_failure_response(self):
+        response = self.client().post(
+            '/api/v1/questions',
+            content_type='application/json',
+            data=json.dumps({
+                'question': 'What is the longest river in Asia?',
+                'anwer': 'Yangtze River',
+                'difficulty': 1,
+                'category': 1
+            })
+        )
+
+        data = json.loads(response.data)
+
+        self.assertTrue(response.status_code, 400)
+        self.assertFalse(data['success'])
+        self.assertEqual(data['error'], 400)
+        self.assertEqual(data['message'], 'bad request')
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
