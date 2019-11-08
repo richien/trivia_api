@@ -6,7 +6,7 @@ Udacity is invested in creating bonding experiences for its employees and studen
 application.
 
 ## Getting Started
-- Base url: This API is not currently hosted byt can be accessed in a local environment on the following url.
+- Base url: This API is not currently hosted but can be accessed in a local environment on the following url.
 ```
 http://localhost:5000/api/v1
 ```
@@ -28,9 +28,11 @@ http://localhost:5000/api/v1
  - 405: method not allowed
 
 ## Resource endpoint library
+
 ```
 GET /questions
 ```
+
 - General
      - Returns a list of question objects, success value, total number of questions
     in the database, a list of category objects and the value of the current category
@@ -106,14 +108,25 @@ GET /questions
 - If there are no questions in the database for the requested page, a `404` error response
   will be returned. Checkout the section on error handling above for the structure of the response.
 
+
 ```
 POST /questions
 ```
-- General
-     - Takes a json object contaning question, answer, difficulty and category values as the request
-       body.
-     - These fields are all `required`. A 400 error response is returned if there are any validation errors in these fields and if any is missing. 
 
+- General
+     - This endpoint handles two scenarios. The first being adding a question to the database and
+       other searching for a question by a search-term.
+     - **When adding a question** 
+        - Takes a json object contaning question, answer, difficulty and category values as the request
+          body.
+        - The fields are all `required`. A 400 error response is returned if there are any validation errors in these fields and if   any is missing.
+     - **When searching for a question by a search term**
+        - Takes a search term as the only field in the body and performs a case insensitive search on all questions
+          in the database.
+        - Returns a list of questions (or an empty list if there are no questions), the total questions found by the search, a current category value of null and a  success value of true.
+        - Returns a 400 error response for validation errors on the search term.
+
+**When adding a question** 
 - Request Arguments: 
     - None
 - Request Body:
@@ -143,10 +156,49 @@ POST /questions
   - success: 201
   - error: 400 
 
+**When searching for a question by a search term**
+- Request Arguments: 
+    - None
+- Request Body:
+  ```
+    {
+        'searchTerm': 'title',
+    }
+  ```
+
+- Sample: `curl -X POST http://localhost:5000/api/v1/questions -d' {"searchTerm": "title"}' -H "Content-Type: application/json"`
+```
+{
+  "current_category": null, 
+  "questions": [
+    {
+      "answer": "Maya Angelou", 
+      "category": 4, 
+      "difficulty": 2, 
+      "id": 5, 
+      "question": "Whose autobiography is entitled 'I Know Why the Caged Bird Sings'?"
+    }, 
+    {
+      "answer": "Edward Scissorhands", 
+      "category": 5, 
+      "difficulty": 3, 
+      "id": 6, 
+      "question": "What was the title of the 1990 fantasy directed by Tim Burton about a young man with multi-bladed appendages?"
+    }
+  ], 
+  "success": true, 
+  "total_questions": 2
+}
+```
+- Response Codes
+  - success: 200
+  - error: 400 
+
 
 ```
 DELETE /questions/<int:id>
 ```
+
 - General
      - deletes the question with the given ID from the database.
      - returns a 422 error response if a question with the ID
@@ -171,6 +223,7 @@ DELETE /questions/<int:id>
 ```
 GET /categories
 ```
+
 - General
   - Returns a list of category objects and a success value.
 - Request Arguments
@@ -213,9 +266,11 @@ GET /categories
   - error: 404
 - If there are no categories in the database, a `404` error response will be returned. Checkout the section on error handling above for the structure of the response.
 
+
 ```
 GET /categories/<int:id>/questions
 ```
+
 - General
   - Returns a list of question objects, a success value, the current category object and the total
     number of questions for the category with the given **id**

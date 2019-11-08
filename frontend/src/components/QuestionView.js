@@ -29,7 +29,7 @@ class QuestionView extends Component {
     this.getQuestions();
   }
 
-  setQuestionCategoryType(result){
+  modifyCategoryTypeFromResult(result){
     // set the category type for each question
     const questions = result.questions.map(question => {
       result.categories.forEach(category => {
@@ -47,7 +47,7 @@ class QuestionView extends Component {
       url: `${BASE_API_URL}/questions?page=${this.state.page}`,
       type: "GET",
       success: (result) => {
-        const questions = this.setQuestionCategoryType(result);
+        const questions = this.modifyCategoryTypeFromResult(result);
         this.setState({
           resetPage: true,
           resetPageCount: 0,
@@ -138,20 +138,33 @@ class QuestionView extends Component {
     })
   }
 
+  modifyCategoryTypeFromState(result){
+    const questions = result.questions.map(question => {
+      this.state.categories.forEach(category => {
+        if(category.id === question.category){
+          question.category = category.type;
+        }
+      });
+      return question;
+    });
+    return questions
+  }
+
   submitSearch = (searchTerm) => {
     $.ajax({
-      url: `/questions`, //TODO: update request URL
+      url: `${BASE_API_URL}/questions`,
       type: "POST",
       dataType: 'json',
       contentType: 'application/json',
       data: JSON.stringify({searchTerm: searchTerm}),
       xhrFields: {
-        withCredentials: true
+        withCredentials: false
       },
       crossDomain: true,
       success: (result) => {
+        const questions = this.modifyCategoryTypeFromState(result);
         this.setState({
-          questions: result.questions,
+          questions: questions,
           totalQuestions: result.total_questions,
           currentCategory: result.current_category })
         return;

@@ -48,6 +48,19 @@ category, and difficulty score.
 def add_new_question():
     try:
         data = json.loads(request.data)
+        if 'searchTerm' in data.keys():
+            if data['searchTerm'] == '':
+                abort(400)
+            search_format = '%{}%'.format(data['searchTerm'].lower())
+            questions = Question.query.filter(
+                db.func.lower(Question.question)
+                .like(search_format)).all()
+            return jsonify({
+                'success': True,
+                'questions': [question.format() for question in questions],
+                'total_questions': len(questions),
+                'current_category': None
+            }), 200
         if not isValidQuestion(data):
             abort(400)
         question = Question(**data)
@@ -64,11 +77,7 @@ def add_new_question():
 
 
 '''
-@TODO:
-Create an endpoint to DELETE question using a question ID.
-
-TEST: When you click the trash icon next to a question, the question will be removed.
-This removal will persist in the database and when you refresh the page.
+Endpoint to DELETE a question using a question ID.
 '''
 @question.route('/questions/<int:id>', methods=['DELETE'])
 def delete_question(id):

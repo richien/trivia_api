@@ -17,7 +17,7 @@ class TriviaTestCase(unittest.TestCase):
         self.database_name = os.getenv('TEST_DATABASE_NAME')
         self.database_user = os.getenv('DATABASE_USER')
         self.database_password = os.getenv('DATABASE_PASSWORD')
-        self.database_path = "postgres://{}:{}@{}/{}".format(
+        self.database_path = "postgresql://{}:{}@{}/{}".format(
             self.database_user,
             self.database_password,
             'localhost:5432',
@@ -202,7 +202,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['error'], 400)
         self.assertEqual(data['message'], 'bad request')
 
-    def test_response_body_of_delete_question_with_success_response(self):
+    def test_body_of_delete_question_for_successfull_request(self):
         question = Question.query.first()
 
         response = self.client().delete(f'/api/v1/questions/{question.id}')
@@ -226,9 +226,44 @@ class TriviaTestCase(unittest.TestCase):
         response = self.client().delete(f'/api/v1/questions/{wrong_id}')
         data = json.loads(response.data)
 
+        self.assertEqual(response.status_code, 422)
         self.assertFalse(data['success'])
         self.assertEqual(data['error'], 422)
         self.assertEqual(data['message'], 'unable to process request')
+
+    def test_body_of_search_response_for_successfull_request(self):
+        search_term = 'china'
+
+        response = self.client().post(
+            '/api/v1/questions',
+            content_type='application/json',
+            data=json.dumps({
+                'searchTerm': search_term
+            }))
+        data = json.loads(response.data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(data['success'])
+        self.assertEqual(len(data['questions']), 1)
+        self.assertEqual(data['total_questions'], 1)
+        self.assertEqual(data['current_category'], None)
+    
+    def test_error_body_for_searchtearm_with_empty_string(self):
+        search_term = ''
+
+        response = self.client().post(
+            '/api/v1/questions',
+            content_type='application/json',
+            data=json.dumps({
+                'searchTerm': search_term
+            }))
+        data = json.loads(response.data)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(data['success'])
+        self.assertEqual(data['error'], 400)
+        self.assertEqual(data['message'], 'bad request')
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
