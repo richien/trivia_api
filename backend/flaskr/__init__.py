@@ -59,15 +59,15 @@ def create_app(test_config=None):
           'message': 'bad request'
         }), 400
 
-    '''
-  @TODO:
-  Create an endpoint to DELETE question using a question ID.
+    @app.errorhandler(422)
+    def unprocessable_request(error):
+        return jsonify({
+          'success': False,
+          'error': 422,
+          'message': 'unable to process request'
+        }), 422
 
-  TEST: When you click the trash icon next to a question, the question will be removed.
-  This removal will persist in the database and when you refresh the page.
-  '''
 
- 
 
     '''
   @TODO:

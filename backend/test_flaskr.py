@@ -145,8 +145,8 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(
             data['data']['question'],
             'What is the longest river in Asia?')
-    
-    def test_add_question_with_failure_response(self):
+
+    def test_add_question_with_invalid_field_in_body(self):
         response = self.client().post(
             '/api/v1/questions',
             content_type='application/json',
@@ -165,6 +165,70 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['error'], 400)
         self.assertEqual(data['message'], 'bad request')
 
+    def test_add_question_with_empty_field_in_body(self):
+        response = self.client().post(
+            '/api/v1/questions',
+            content_type='application/json',
+            data=json.dumps({
+                'question': 'What is the longest river in Asia?',
+                'answer': '',
+                'difficulty': 1,
+                'category': 1
+            })
+        )
+
+        data = json.loads(response.data)
+
+        self.assertTrue(response.status_code, 400)
+        self.assertFalse(data['success'])
+        self.assertEqual(data['error'], 400)
+        self.assertEqual(data['message'], 'bad request')
+
+    def test_add_question_with_missing_field_in_body(self):
+        response = self.client().post(
+            '/api/v1/questions',
+            content_type='application/json',
+            data=json.dumps({
+                'question': 'What is the longest river in Asia?',
+                'difficulty': 1,
+                'category': 1
+            })
+        )
+
+        data = json.loads(response.data)
+
+        self.assertTrue(response.status_code, 400)
+        self.assertFalse(data['success'])
+        self.assertEqual(data['error'], 400)
+        self.assertEqual(data['message'], 'bad request')
+
+    def test_response_body_of_delete_question_with_success_response(self):
+        question = Question.query.first()
+
+        response = self.client().delete(f'/api/v1/questions/{question.id}')
+        data = json.loads(response.data)
+
+        self.assertTrue(response.status_code, 200)
+        self.assertTrue(data['success'])
+
+    def test_question_is_deleted_successfully(self):
+        len_db_before = len(Question.query.all())
+        question = Question.query.first()
+
+        self.client().delete(f'/api/v1/questions/{question.id}')
+        len_db_after = len(Question.query.all())
+
+        self.assertNotEqual(len_db_before, len_db_after)
+
+    def test_error_body_on_failure_to_delete_question(self):
+        wrong_id = 101010
+
+        response = self.client().delete(f'/api/v1/questions/{wrong_id}')
+        data = json.loads(response.data)
+
+        self.assertFalse(data['success'])
+        self.assertEqual(data['error'], 422)
+        self.assertEqual(data['message'], 'unable to process request')
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

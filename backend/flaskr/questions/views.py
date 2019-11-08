@@ -62,6 +62,32 @@ def add_new_question():
     finally:
         db.session.close()
 
+
+'''
+@TODO:
+Create an endpoint to DELETE question using a question ID.
+
+TEST: When you click the trash icon next to a question, the question will be removed.
+This removal will persist in the database and when you refresh the page.
+'''
+@question.route('/questions/<int:id>', methods=['DELETE'])
+def delete_question(id):
+    try:
+        question = Question.query.get(id)
+        if question is None:
+            abort(422)
+        db.session.delete(question)
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': f'Question with ID: {id} deleted'
+        }), 200
+    except Exception as error:
+        raise error
+    finally:
+        db.session.close()
+
+
 '''
 Endpoint to handle GET requests
 for all available categories.

@@ -2,6 +2,7 @@ def isValidQuestion(data):
     ''' checks whether the proper body was sent in
         the request
      '''
+    # these are required fields
     expected = [
         'question',
         'answer',
@@ -9,9 +10,7 @@ def isValidQuestion(data):
         'difficulty'
     ]
     isValid = True
-    for item in data.keys():
-        if item not in expected:
+    for item in expected:
+        if item not in data.keys() or data[item] == '':
             isValid = False
-    if len(data.keys()) != len(expected):
-        isValid = False
     return isValid

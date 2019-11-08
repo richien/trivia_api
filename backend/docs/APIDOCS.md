@@ -22,10 +22,10 @@ http://localhost:5000/api/v1
  }
  ```
  The API will return the following error types when requests fail:
- - 400: Bad Request
- - 404: Resource Not Found
- - 422: Not Processable
- - 405: Method Not Allowed
+ - 400: bad request
+ - 404: resource not found
+ - 422: unable to process request 
+ - 405: method not allowed
 
 ## Resource endpoint library
 ```
@@ -110,7 +110,9 @@ GET /questions
 POST /questions
 ```
 - General
-     - 
+     - Takes a json object contaning question, answer, difficulty and category values as the request
+       body.
+     - These fields are all `required`. A 400 error response is returned if there are any validation errors in these fields and if any is missing. 
 
 - Request Arguments: 
     - None
@@ -140,6 +142,31 @@ POST /questions
 - Response Codes
   - success: 201
   - error: 400 
+
+
+```
+DELETE /questions/<int:id>
+```
+- General
+     - deletes the question with the given ID from the database.
+     - returns a 422 error response if a question with the ID
+       supplied is not found in the database.
+     - returns a 404 error response if the ID supplied is not an integer.
+
+- Request Arguments: 
+    - None
+
+- Sample: `curl -X DELETE http://localhost:5000/api/v1/questions/21`
+```
+{
+  "message": "Question with ID: 21 deleted", 
+  "success": true
+}
+```
+- Response Codes
+  - success: 200
+  - error: 422, 404  
+
 
 ```
 GET /categories
