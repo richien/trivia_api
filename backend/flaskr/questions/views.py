@@ -1,8 +1,9 @@
 import json
-from flask import Flask, request, abort, jsonify, Blueprint
+import random
+from flask import request, abort, jsonify, Blueprint
 
 from ..models import db, Question, Category
-from .helpers import isValidQuestion
+from .helpers import isValidQuestion, isValidQuizRequest
 
 
 QUESTIONS_PER_PAGE = 10
@@ -40,12 +41,11 @@ def retrieve_questions():
 
 
 '''
-Endpoint to POST a new question,
-which will require the question and answer text,
-category, and difficulty score.
+Endpoint to POST a new question or search questions
+by a search term
 '''
 @question.route('/questions', methods=['POST'])
-def add_new_question():
+def add_or_search_questions():
     try:
         data = json.loads(request.data)
         if 'searchTerm' in data.keys():
@@ -139,6 +139,37 @@ def retrieve_questions_by_category(id):
             'questions': [question.format() for question in questions],
             'total_questions': total_questions[0].total,
             'current_category': category.format()
+        }), 200
+    except Exception as error:
+        raise error
+    finally:
+        db.session.close()
+
+
+'''
+Endpoint to get questions to play the quiz.
+'''
+@question.route('/quizzes', methods=['POST'])
+def get_quiz_question():
+    try:
+        data = json.loads(request.data)
+        if not isValidQuizRequest(data):
+            abort(400)
+        result = db.session.query(Question).filter(
+            Question.id.notin_(data['previous_questions'])).all()
+        questions = [question.format() for question in result]
+        if data['quiz_category']['id'] != 0:  # ID zero is for all categories
+            questions = [
+                question
+                for question in questions
+                if question['category'] == data['quiz_category']['id']
+            ]
+        if not questions:
+            abort(404)
+        question = random.choice(questions)
+        return jsonify({
+            'success': True,
+            'question': question
         }), 200
     except Exception as error:
         raise error

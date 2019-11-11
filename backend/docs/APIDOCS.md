@@ -11,7 +11,7 @@ application.
 http://localhost:5000/api/v1
 ```
 - The API in its current version does not use any authentication mechanisms.
- 
+
  ## Error Handling
  Errors are returned as JSON objects in the following format:
  ```
@@ -26,6 +26,7 @@ http://localhost:5000/api/v1
  - 404: resource not found
  - 422: unable to process request 
  - 405: method not allowed
+ - 500: internal server error
 
 ## Resource endpoint library
 
@@ -315,3 +316,46 @@ GET /categories/<int:id>/questions
   - success: 200
   - error: 404
 - If there are no categories in the database with the supplied ID, a `404` error response will be returned. Checkout the section on error handling above for the structure of the response.
+
+
+```
+POST /quizzes
+```
+
+- General
+     - Takes a json object contaning a list of IDs of previous questions and a quiz category object in the request
+       body.
+     - Returns a queston object and a success value of true is the request is successfull
+     - Returns a 404 error response if there are no questions in the selected catergory
+     - Returns a 400 error response for validation errors in the request body.
+
+- Request Arguments: 
+    - None
+- Request Body:
+  ```
+    {
+        'previous_questions': [13],
+        'quiz_category': {
+          'id': 3,
+          'type': 'Geography'
+        }
+    }
+  ```
+
+- Sample: `curl -X POST http://localhost:5000/api/v1/quizzes -d'{"previous_questions": [1, 11], "quiz_category": {"id": 3, "type": "Geography"}}' -H "Content-Type: application/json"`
+```
+{
+  "question": {
+    "answer": "The Palace of Versailles", 
+    "category": 3, 
+    "difficulty": 3, 
+    "id": 14, 
+    "question": "In which royal palace would you find the Hall of Mirrors?"
+  }, 
+  "success": true
+}
+```
+- Response Codes
+  - success: 200
+  - error: 400
+  - 404

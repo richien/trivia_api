@@ -247,7 +247,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(len(data['questions']), 1)
         self.assertEqual(data['total_questions'], 1)
         self.assertEqual(data['current_category'], None)
-    
+
     def test_error_body_for_searchtearm_with_empty_string(self):
         search_term = ''
 
@@ -257,6 +257,82 @@ class TriviaTestCase(unittest.TestCase):
             data=json.dumps({
                 'searchTerm': search_term
             }))
+        data = json.loads(response.data)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(data['success'])
+        self.assertEqual(data['error'], 400)
+        self.assertEqual(data['message'], 'bad request')
+
+    def test_get_quiz_question_without_previous_questions(self):
+        response = self.client().post(
+            '/api/v1/quizzes',
+            content_type='application/json',
+            data=json.dumps({
+                'previous_questions': [],
+                'quiz_category': {'id': 0, 'type': 'all'}
+            }))
+
+        data = json.loads(response.data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(data['success'])
+        self.assertTrue(data['question'])
+
+    def test_get_quiz_question_with_previous_questions(self):
+        # add an additional question so that there is
+        # more than one question in the database
+        with self.app.app_context():
+            category = Category.query.first()
+            new_question = Question(
+                question='Where is England?',
+                answer='In Europe',
+                category=category.id,
+                difficulty=1)
+            self.db.session.add(new_question)
+            self.db.session.commit()
+        question = Question.query.first()
+        response = self.client().post(
+            '/api/v1/quizzes',
+            content_type='application/json',
+            data=json.dumps({
+                'previous_questions': [question.id],
+                'quiz_category': {'id': 0, 'type': 'all'}
+            }))
+
+        data = json.loads(response.data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(data['success'])
+        self.assertTrue(data['question'])
+        self.assertTrue(data['question']['id'] != question.id)
+
+    def test_get_quiz_question_with_no_more_questions_available(self):
+        questions = Question.query.all()
+        response = self.client().post(
+            '/api/v1/quizzes',
+            content_type='application/json',
+            data=json.dumps({
+                'previous_questions': [question.id for question in questions],
+                'quiz_category': {'id': 0, 'type': 'all'}
+            }))
+
+        data = json.loads(response.data)
+
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(data['success'])
+        self.assertEqual(data['error'], 404)
+        self.assertEqual(data['message'], 'resource not found')
+
+    def test_get_quiz_question_with_invalid_request_body(self):
+        question = Question.query.first()
+        response = self.client().post(
+            '/api/v1/quizzes',
+            content_type='application/json',
+            data=json.dumps({
+                'previous_questions': [question.id]
+            }))
+
         data = json.loads(response.data)
 
         self.assertEqual(response.status_code, 400)

@@ -36,8 +36,11 @@ class QuizView extends Component {
     })
   }
 
-  selectCategory = ({type, id=0}) => {
-    this.setState({quizCategory: {type, id}}, this.getNextQuestion)
+  selectCategory = ({type='all', id=0}) => {
+    this.setState(
+      {
+        quizCategory: {type, id},
+      }, this.getNextQuestion)
   }
 
   handleChange = (event) => {
@@ -49,7 +52,7 @@ class QuizView extends Component {
     if(this.state.currentQuestion.id) { previousQuestions.push(this.state.currentQuestion.id) }
 
     $.ajax({
-      url: '/quizzes', //TODO: update request URL
+      url: `${BASE_API_URL}/quizzes`,
       type: "POST",
       dataType: 'json',
       contentType: 'application/json',
@@ -58,7 +61,7 @@ class QuizView extends Component {
         quiz_category: this.state.quizCategory
       }),
       xhrFields: {
-        withCredentials: true
+        withCredentials: false
       },
       crossDomain: true,
       success: (result) => {
@@ -72,6 +75,10 @@ class QuizView extends Component {
         return;
       },
       error: (error) => {
+        if(error.status === 404){
+          this.setState({forceEnd: true})
+          return;
+        }
         alert('Unable to load question. Please try your request again')
         return;
       }

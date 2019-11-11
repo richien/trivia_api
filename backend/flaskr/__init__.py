@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 
-from flaskr.models import setup_db
+from .models import setup_db
 
 
 api_url_prefix = '/api/v1'
@@ -16,7 +16,7 @@ def create_app(test_config=None):
     setup_db(app)
 
     # register blue prints for routes
-    from flaskr.questions.views import question
+    from .questions.views import question
 
     app.register_blueprint(question, url_prefix=api_url_prefix)
 
@@ -67,23 +67,14 @@ def create_app(test_config=None):
           'message': 'unable to process request'
         }), 422
 
+    return app
 
-    '''
-  @TODO:
-  Create a POST endpoint to get questions to play the quiz.
-  This endpoint should take category and previous question parameters
-  and return a random questions within the given category,
-  if provided, and that is not one of the previous questions.
-
-  TEST: In the "Play" tab, after a user selects "All" or a category,
-  one question at a time is displayed, the user is allowed to answer
-  and shown whether they were correct or not.
-  '''
-
-    '''
-  @TODO:
-  Create error handlers for all expected errors
-  including 404 and 422.
-  '''
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        return jsonify({
+          'success': False,
+          'error': 500,
+          'message': 'internal server error'
+        }), 500
 
     return app
